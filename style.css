@@ -144,6 +144,16 @@ body{
     margin: 9px auto;
 }
 
+.chats-container .bot-message.loading .avatar{
+    animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .chats-container .user-message{
     flex-direction: column;
     align-items: flex-end;
