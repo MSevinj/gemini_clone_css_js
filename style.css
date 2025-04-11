@@ -23,6 +23,13 @@ body{
     background: var(--primary-color) ;
 }
 
+.container{
+    overflow-y: auto;
+    padding: 32px 0 60px;
+    max-height: calc(100vh -127px);
+    scrollbar-color: var(--sceolbar-color) transparent;
+}
+
 .container :where(.app-header, .suggestions, .message, .prompt-wrapper, .disclaimer-text){
     margin: 0 auto;
     width: 100%;
