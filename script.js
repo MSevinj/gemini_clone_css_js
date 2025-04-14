@@ -2,6 +2,8 @@ const container = document.querySelector('.container');
 const chatsContainer = document.querySelector('.chats-container');
 const promptForm = document.querySelector('.prompt-form');
 const promptInput = promptForm.querySelector('.prompt-input');
+const fileInput = promptForm.querySelector('#file-input');
+const fileUploadWrapper = promptForm.querySelector('.file-upload-wrapper');
 
 const API_KEY = 'AIzaSyD39lxArGY24cayaZywJpCZk2z7OaFzuiA';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
@@ -88,7 +90,24 @@ const handleFormSubmit = (e) => {
     }, 600);
 }
 
+fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
 
+const isImage = file.type.startsWith('image/');
+const reader = new FileReader();
+reader.readAsDataURL(file);
+
+
+    reader.onload = (e) => {
+        fileInput.value = '';
+        fileUploadWrapper.querySelector('.file-preview').src = e.target.result;
+        fileUploadWrapper.classList.add('active', isImage ? 'img-attached' : 'file-attached');
+    }
+})
 
 
 promptForm.addEventListener('submit', handleFormSubmit);
+document.getElementById('add-file-btn').addEventListener('click', () => {
+    fileInput.click();
+});
