@@ -8,7 +8,7 @@ const fileUploadWrapper = promptForm.querySelector('.file-upload-wrapper');
 const API_KEY = 'AIzaSyD39lxArGY24cayaZywJpCZk2z7OaFzuiA';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
-let userMessage = ''
+const userData = { message: '', file: {} };
 const chatHistory = [];
 
 const createMsgElement = (content, ...classes) => {
@@ -44,7 +44,7 @@ const generateResponse = async (botMsgDiv) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [...chatHistory, { role: 'user', parts: [{ text: userMessage }] }]
+                contents: [...chatHistory, { role: 'user', parts: [{ text: userData.message }] }]
             })
         });
 
@@ -54,29 +54,56 @@ const generateResponse = async (botMsgDiv) => {
         
         const responseText = data.candidates[0].content.parts[0].text.replace(/\*\*([^*]+)\*\*/g, "$1").trim();
 
-       
-        chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+     chatHistory.push({
+        role: 'user',
+        parts: [
+          { text: userData.message },
+          ...(userData.file.data ? [{
+            inline_data: {
+              mime_type: userData.file.mime_type,
+              data: userData.file.data
+            }
+          }] : [])
+        ]
+      });
+
         chatHistory.push({ role: 'model', parts: [{ text: responseText }] });
 
         typingEffect(responseText, textElement, botMsgDiv);
+
+        console.log(chatHistory)
+
+        
 
     } catch (error) {
         console.error(error);
         textElement.textContent = `Error: ${error.message}`;
         botMsgDiv.classList.remove('loading');
+    } finally {
+        userData.file = {};
     }
 };
 
 const handleFormSubmit = (e) => {
     e.preventDefault();
-    userMessage = promptInput.value.trim();
+    const userMessage = promptInput.value.trim();
     if(!userMessage) return;
 
     promptInput.value = '';
+    userData.message = userMessage;
 
-    const userMsgHTML = '<p class="message-text"></p>';
+    const userMsgHTML = `
+  ${
+    userData.file.data
+      ? userData.file.isImage
+        ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}" class="img-attachment" />`
+        : `<div class="file-attachment"><span class="material-symbols-rounded">description</span>${userData.file.fileName}</div>`
+      : ""
+  }
+  <p class="message-text"></p>
+`;
+
     const userMsgDiv = createMsgElement (userMsgHTML, 'user-message');
-
     userMsgDiv.querySelector('.message-text').textContent = userMessage;
     chatsContainer.appendChild(userMsgDiv);
     scrollToBottom();
@@ -101,10 +128,22 @@ reader.readAsDataURL(file);
 
     reader.onload = (e) => {
         fileInput.value = '';
+        const base64String = e.target.result.split(",")[1]
         fileUploadWrapper.querySelector('.file-preview').src = e.target.result;
         fileUploadWrapper.classList.add('active', isImage ? 'img-attached' : 'file-attached');
+
+        userData.file = {fileName: file.name, data: base64String, mime_type: file.type, isImage };
+        promptInput.dispatchEvent(new Event('input'));
     }
 })
+
+
+
+document.querySelector('#cancel-file-btn').addEventListener('click', () =>{
+    userData.file = {};
+    fileUploadWrapper.classList.remove('active', 'img-attached',  'file-attached');
+})
+
 
 
 promptForm.addEventListener('submit', handleFormSubmit);
