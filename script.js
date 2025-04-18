@@ -8,6 +8,7 @@ const fileUploadWrapper = promptForm.querySelector('.file-upload-wrapper');
 const API_KEY = 'AIzaSyD39lxArGY24cayaZywJpCZk2z7OaFzuiA';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
+let typingInterval, controller;
 const userData = { message: '', file: {} };
 const chatHistory = [];
 
@@ -25,19 +26,23 @@ const typingEffect = (text, textElement, botMsgDiv) =>{
     const words = text.split(" ");
     let wordIndex = 0;
 
-const typingInterval = setInterval(() => {
+typingInterval = setInterval(() => {
         if (wordIndex < words.length) {
             textElement.textContent += (wordIndex === 0 ? "" : " ") + words[wordIndex++];
             botMsgDiv.classList.remove('loading');
+            document.body.classList.add('bot-responding');
             scrollToBottom();
         }else {
             clearInterval(typingInterval);
+            botMsgDiv.classList.remove('loading');
+            document.body.classList.remove('bot-responding');
         }
     }, 40)
 }
 
 const generateResponse = async (botMsgDiv) => {
     const textElement = botMsgDiv.querySelector(".message-text");
+    controller = new AbortController();
 
     try {
         const response = await fetch(API_URL, {
@@ -45,7 +50,8 @@ const generateResponse = async (botMsgDiv) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [...chatHistory, { role: 'user', parts: [{ text: userData.message }] }]
-            })
+            }),
+            signal: controller.signal 
         });
 
         const data = await response.json();
@@ -77,6 +83,7 @@ const generateResponse = async (botMsgDiv) => {
 
     } catch (error) {
         console.error(error);
+        textElement.style.color = '#d62939';
         textElement.textContent = `Error: ${error.message}`;
         botMsgDiv.classList.remove('loading');
     } finally {
@@ -87,10 +94,12 @@ const generateResponse = async (botMsgDiv) => {
 const handleFormSubmit = (e) => {
     e.preventDefault();
     const userMessage = promptInput.value.trim();
-    if(!userMessage) return;
+    if(!userMessage || document.body.classList.contains('bot-responding')) return;
 
     promptInput.value = '';
     userData.message = userMessage;
+    document.body.classList.add('bot-responding');
+    fileUploadWrapper.classList.remove('active', 'img-attached',  'file-attached');
 
     const userMsgHTML = `
   ${
@@ -115,6 +124,9 @@ const handleFormSubmit = (e) => {
      scrollToBottom();
      generateResponse(botMsgDiv);
     }, 600);
+
+    fileInput.value = ''; 
+    fileUploadWrapper.classList.remove('active', 'img-attached'); 
 }
 
 fileInput.addEventListener('change', () => {
@@ -128,22 +140,35 @@ reader.readAsDataURL(file);
 
     reader.onload = (e) => {
         fileInput.value = '';
-        const base64String = e.target.result.split(",")[1]
+        const base64String = e.target.result.split(",")[1];
         fileUploadWrapper.querySelector('.file-preview').src = e.target.result;
         fileUploadWrapper.classList.add('active', isImage ? 'img-attached' : 'file-attached');
 
         userData.file = {fileName: file.name, data: base64String, mime_type: file.type, isImage };
-        promptInput.dispatchEvent(new Event('input'));
+        
     }
 })
-
-
 
 document.querySelector('#cancel-file-btn').addEventListener('click', () =>{
     userData.file = {};
     fileUploadWrapper.classList.remove('active', 'img-attached',  'file-attached');
-})
+});
 
+document.querySelector('#stop-response-btn').addEventListener('click', () =>{
+    userData.file = {};
+    controller?.abort();
+    clearInterval(typingInterval);
+    const loadingBotMsg = chatsContainer.querySelector('.bot-message.loading');
+if (loadingBotMsg) {
+  loadingBotMsg.classList.remove('loading');
+}
+});
+
+document.querySelector('#delete-chats-btn').addEventListener('click', () =>{
+    chatHistory.length = 0;
+    chatsContainer.innerHTML = '';
+    document.body.classList.remove('bot-responding')
+});
 
 
 promptForm.addEventListener('submit', handleFormSubmit);

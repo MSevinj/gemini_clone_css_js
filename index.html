@@ -34,15 +34,14 @@
         </ul>
 
         <div class="chats-container">
-            <!-- <div class="message user-message">
-                <p class="message-text">Thank you for your quick response! I appreciate your help.>
-                </p>
+            <div class="message user-message" style="display: none;">
+                <p class="message-text">Thank you for your quick response! I appreciate your help.</p>
             </div>
-            <div class="message bot-message">
+            <div class="message bot-message" style="display: none;">
                 <img src="gemini-chatbot-logo.svg" class="avatar">
                 <p class="message-text">You're very welcome! I'm happy to help. 😊</p>
             </div>
-        </div> -->
+        </div>
 
         <div class="prompt-container">
             <div class="prompt-wrapper">
@@ -55,11 +54,13 @@
                         <button type ='button' class="file-icon material-symbols-rounded">description</button>
                         <button id="add-file-btn" type="button" class="material-symbols-rounded">attach_file</button>
                         <button id="cancel-file-btn" class="material-symbols-rounded">cancel</button>
+
+                        <button id="stop-response-btn" class="material-symbols-rounded">stop_circle</button>
                         <button id="send-prompt-btn" class="material-symbols-rounded">arrow_upward</button>
                     </div>
                 </form>
 
-                <button id="theme-toggle-btn" class="material-symbols-rounded">light_mode</button>
+                <button type ='button' id="theme-toggle-btn" class="material-symbols-rounded">light_mode</button>
                 <button id="delete-chats-btn" class="material-symbols-rounded">delete</button>
             </div>
 
