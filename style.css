@@ -75,8 +75,8 @@ body{
     scrollbar-width: none;
 } 
 
-.container :is(.app-header, .suggestions){
-    /* display: none; */
+body.container :where(.app-header, .suggestions){
+    display: none;
 }
 
 .suggestions .suggestions-items {
@@ -94,7 +94,7 @@ body{
 }
 
 .suggestions .suggestions-items:hover{
-    background: var(--secondary-hover-colorcolor);
+    background: var(--secondary-hover-color);
 }
 .suggestions .suggestions-items .text{
     font-size: 1.1rem;
@@ -327,8 +327,6 @@ body.bot-responding .prompt-form #stop-response-btn{
     display: block;
 }
 
-
-
 .prompt-container .disclaimer-text {
     text-align: center;
     font-size: 0.9rem;
@@ -336,4 +334,23 @@ body.bot-responding .prompt-form #stop-response-btn{
     color: var(--placeholder-color);
 }
 
+@media (max-width: 768px) {
+    .container{
+        padding: 20px 0 100px;
+    }
+
+    .app-header :is(.heading, .sub-heading) {
+        font-size: 2rem;
+        line-height: 1.4;
+    }
+
+    .prompt-form .file-upload-wrapper.active #cancel-file-btn{
+        opacity: 0;
+    }
+    
+    .prompt-wrapper.hide-controls :where(#theme-toggle-btn, #delete-chats-btn) {
+        display: none;
+    }
+
+}
 
