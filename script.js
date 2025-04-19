@@ -1,9 +1,13 @@
+document.addEventListener('DOMContentLoaded', () => {
+
 const container = document.querySelector('.container');
 const chatsContainer = document.querySelector('.chats-container');
 const promptForm = document.querySelector('.prompt-form');
 const promptInput = promptForm.querySelector('.prompt-input');
 const fileInput = promptForm.querySelector('#file-input');
 const fileUploadWrapper = promptForm.querySelector('.file-upload-wrapper');
+const themeToggle = document.getElementById('theme-toggle-btn');
+
 
 const API_KEY = 'AIzaSyD39lxArGY24cayaZywJpCZk2z7OaFzuiA';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
@@ -82,14 +86,15 @@ const generateResponse = async (botMsgDiv) => {
         
 
     } catch (error) {
-        console.error(error);
         textElement.style.color = '#d62939';
-        textElement.textContent = `Error: ${error.message}`;
+        textElement.textContent = error.name === 'AbortError' ? "Response generation stopped." :error.message;
         botMsgDiv.classList.remove('loading');
+        document.body.classList.remove('bot-responding');
+        scrollToBottom()
     } finally {
         userData.file = {};
     }
-};
+}
 
 const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -170,8 +175,19 @@ document.querySelector('#delete-chats-btn').addEventListener('click', () =>{
     document.body.classList.remove('bot-responding')
 });
 
+themeToggle.addEventListener('click', () =>{
+    const isLightTheme = document.body.classList.toggle('light-theme');
+    localStorage.setItem ('themeColor', isLightTheme ? 'light_mode' : 'dark_mode');
+    themeToggle.textContent = isLightTheme ? 'dark_mode' : 'light_mode';
+})
+
+    const isLightTheme = localStorage.getItem('themeColor') === 'light_mode';
+    document.body.classList.toggle("light-theme", isLightTheme);
+    themeToggle.textContent = isLightTheme ? 'dark_mode' : 'light_mode';
+})
 
 promptForm.addEventListener('submit', handleFormSubmit);
 document.getElementById('add-file-btn').addEventListener('click', () => {
     fileInput.click();
 });
+
